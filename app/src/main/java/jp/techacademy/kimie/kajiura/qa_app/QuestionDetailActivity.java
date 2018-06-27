@@ -25,7 +25,7 @@ public class QuestionDetailActivity extends AppCompatActivity {
 
     private DatabaseReference mAnswerRef;
 
-    private ChildEventListener mEvenListener = new ChildEventListener() {
+    private ChildEventListener mEventListener = new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s){
             HashMap map = (HashMap) dataSnapshot.getValue();
@@ -108,6 +108,6 @@ public class QuestionDetailActivity extends AppCompatActivity {
 
         DatabaseReference dataBaseReference = FirebaseDatabase.getInstance().getReference();
         mAnswerRef = dataBaseReference.child(Const.ContentsPATH).child(String.valueOf(mQuestion.getGenre())).child(mQuestion.getQuestionUid()).child(Const.AnswersPATH);
-        mAnswerRef.addChildEventListener(mEvenListener);
+        mAnswerRef.addChildEventListener(mEventListener);
     }
 }

@@ -186,6 +186,17 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+
+        // 1:趣味を既定の選択とする
+        if(mGenre == 0) {
+            NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+            onNavigationItemSelected(navigationView.getMenu().getItem(0));
+        }
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
