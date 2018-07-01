@@ -17,6 +17,7 @@
         android:layout_height="50dp"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Title"
+        android:id="@+id/titleTextView"
         android:layout_alignParentTop="true"
         android:layout_toEndOf="@+id/imageView"/>
 

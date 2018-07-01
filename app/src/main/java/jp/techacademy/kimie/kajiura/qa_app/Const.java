@@ -12,4 +12,6 @@ public class Const {
 
     // Preferenceに表示名を保存する時のキー
     public static final String NameKEY = "name";
+
+    public static final String FavoritePATH = "favorite";
 }

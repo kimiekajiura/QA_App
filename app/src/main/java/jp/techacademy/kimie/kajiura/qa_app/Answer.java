@@ -15,6 +15,7 @@ public class Answer implements Serializable {
     //Firebaseから取得した回答UID
     private String mAnswerUid;
 
+
     public Answer(String body, String name, String uid, String answerUid) {
         mBody = body;
         mName = name;
@@ -37,4 +38,6 @@ public class Answer implements Serializable {
     public String getAnswerUid() {
         return mAnswerUid;
     }
+
+
 }

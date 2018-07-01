@@ -1,10 +1,21 @@
 package jp.techacademy.kimie.kajiura.qa_app;
 
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
+import android.graphics.ColorSpace;
+import android.graphics.drawable.ColorDrawable;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ListView;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -16,8 +27,18 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.HashMap;
+import java.util.Map;
+import java.util.jar.Attributes;
 
-public class QuestionDetailActivity extends AppCompatActivity {
+public class QuestionDetailActivity extends AppCompatActivity implements View.OnClickListener,DatabaseReference.CompletionListener {
+
+    private FloatingActionButton mFavoriteButton;
+    DatabaseReference mDatabaseReference;
+    private int mGenre;
+    private ProgressDialog mProgress;
+
+    //お気に入りボタンが押されているか
+    private int mSetfav;
 
     private ListView mListView;
     private Question mQuestion;
@@ -69,15 +90,28 @@ public class QuestionDetailActivity extends AppCompatActivity {
         }
     };
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_question_detail);
 
-        //渡ってきたQuestionのオブジェクトを保持
+        // 渡ってきたQuestionのオブジェクトを保持する
         Bundle extras = getIntent().getExtras();
         mQuestion = (Question) extras.get("question");
+        mGenre = extras.getInt("genre");
+
+        mFavoriteButton = (FloatingActionButton) findViewById(R.id.favorite);
+        mFavoriteButton.setOnClickListener(this);
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (user == null) {
+            //ログインしていない：お気に入りボタン不可視
+            mFavoriteButton.setVisibility(View.INVISIBLE);
+        }else{
+            //ログイン済：お気に入りボタン可視
+            mFavoriteButton.setVisibility(View.VISIBLE);
+        }
 
         setTitle(mQuestion.getTitle());
 
@@ -106,8 +140,64 @@ public class QuestionDetailActivity extends AppCompatActivity {
             }
         });
 
-        DatabaseReference dataBaseReference = FirebaseDatabase.getInstance().getReference();
+        final DatabaseReference dataBaseReference = FirebaseDatabase.getInstance().getReference();
         mAnswerRef = dataBaseReference.child(Const.ContentsPATH).child(String.valueOf(mQuestion.getGenre())).child(mQuestion.getQuestionUid()).child(Const.AnswersPATH);
         mAnswerRef.addChildEventListener(mEventListener);
+
     }
-}
+
+    @Override
+    public void onClick(View v) {
+
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        DatabaseReference favoriteRef = databaseReference.child(Const.FavoritePATH).child(String.valueOf(mQuestion.getUid())).child(String.valueOf(mQuestion.getQuestionUid()));
+            Map<String, String> data = new HashMap<String, String>();
+
+            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+            String name =sp.getString(Const.NameKEY,"");
+
+            data.put("投稿者", name);
+            data.put("タイトル",mQuestion.getTitle());
+            data.put("質問内容",mQuestion.getBody());
+            data.put("ジャンル",String.valueOf(mQuestion.getGenre()));
+            data.put("QID" ,mQuestion.getQuestionUid());
+
+            String questionUid = data.get(mQuestion.getQuestionUid());
+            data.values();
+
+            for (Map.Entry<String,String> e : data.entrySet()){
+                if (data.containsKey(mQuestion.getQuestionUid())){
+
+                }else{
+
+                }
+        }
+
+            if (mSetfav == 0) {
+                mFavoriteButton.setBackgroundTintList(ColorStateList.valueOf(Color.BLUE));
+                mSetfav = 1;
+
+                favoriteRef.push().setValue(data,this);
+
+                View view = findViewById(android.R.id.content);
+                Snackbar.make(view, "お気に入りに追加しました", Snackbar.LENGTH_LONG).show();
+
+            }else {
+                mFavoriteButton.setBackgroundTintList(ColorStateList.valueOf(Color.GRAY));
+                mSetfav = 0;
+            }
+
+    }
+    @Override
+    public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+
+        if (databaseError == null) {
+            finish();
+        } else {
+            Snackbar.make(findViewById(android.R.id.content), "投稿に失敗しました", Snackbar.LENGTH_LONG).show();
+        }
+    }
+
+
+
+    }
