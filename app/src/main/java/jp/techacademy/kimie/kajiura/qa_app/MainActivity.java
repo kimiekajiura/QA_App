@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity
 
     private Toolbar mToolbar;
     private int mGenre = 0;
+    private NavigationView mNavigationView;
 
     //ここから
     //メンバ変数
@@ -183,11 +184,25 @@ public class MainActivity extends AppCompatActivity
                 startActivity(intent);
             }
         });
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        mNavigationView = (NavigationView) findViewById(R.id.nav_view);
+        mNavigationView.setNavigationItemSelectedListener(this);
+        Menu menu =mNavigationView.getMenu();
+        MenuItem menuItem = menu.findItem(R.id.nav_favorite);
+
+        if (user == null){
+            menuItem.setVisible(false);
+        }else{
+            menuItem.setVisible(true);
+        }
 
         // 1:趣味を既定の選択とする
         if(mGenre == 0) {
@@ -241,6 +256,10 @@ public class MainActivity extends AppCompatActivity
         }else if (id == R.id.nav_favorite) {
             mToolbar.setTitle("お気に入り");
             mGenre = 5;
+            Intent intent = new Intent(getApplicationContext(),FavoriteListAdapter.class);
+            intent.putExtra("ジャンル",mGenre);
+            intent.putExtra("question", mQuestionArrayList);
+            startActivity(intent);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -256,6 +275,7 @@ public class MainActivity extends AppCompatActivity
         if (mGenreRef != null) {
             mGenreRef.removeEventListener(mEventListener);
         }
+
         mGenreRef = mDatabaseReference.child(Const.ContentsPATH).child(String.valueOf(mGenre));
         mGenreRef.addChildEventListener(mEventListener);
         //ここまで

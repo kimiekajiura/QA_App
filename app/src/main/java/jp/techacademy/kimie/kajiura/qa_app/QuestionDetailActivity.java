@@ -14,6 +14,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
@@ -35,10 +36,11 @@ import java.lang.String;
 public class QuestionDetailActivity extends AppCompatActivity  implements View.OnClickListener,DatabaseReference.CompletionListener{
 
     private int favoriteFL;
-    private FloatingActionButton mFavoriteButton;
+    private Button mFavoriteButton;
 
     DatabaseReference mDataBaseReference;
     private int mGenre;
+    private int mFavorite;
     private ProgressDialog mProgress;
 
     private ListView mListView;
@@ -97,20 +99,8 @@ public class QuestionDetailActivity extends AppCompatActivity  implements View.O
     private ChildEventListener mFavoriteListener = new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot ,String s){
-            HashMap map = (HashMap) dataSnapshot.getValue();
-
-            String genre = (String) map.get("getQuestionUid");
-
-            String questionUid = dataSnapshot.getKey();
-
-            for(Question question : mQuestion.getQuestion()) {
-                if (questionUid.equals(question.getQuestionUid())) {
-                    favoriteFL = 1;
-                }else{
-                    favoriteFL = 0;
-                }
-            }
-
+            favoriteFL = 1;
+            mFavoriteButton.setText("お気に入りから削除");
         }
 
         @Override
@@ -139,17 +129,16 @@ public class QuestionDetailActivity extends AppCompatActivity  implements View.O
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_question_detail);
 
-        mFavoriteButton = (FloatingActionButton) findViewById(R.id.favorite);
-        mFavoriteButton.setOnClickListener(this);
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-        mFavoriteButton.setBackgroundTintList(ColorStateList.valueOf(Color.GRAY));
+        mFavoriteButton = (Button) findViewById(R.id.favorite_button);
+        mFavoriteButton.setOnClickListener(this);
 
         // 渡ってきたQuestionのオブジェクトを保持する
         Bundle extras = getIntent().getExtras();
         mQuestion = (Question) extras.get("question");
         mGenre = extras.getInt("genre");
-
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        mFavorite = extras.getInt("favoriteFL");
 
         if (user == null) {
             //ログインしていない：お気に入りボタン不可視
@@ -208,8 +197,22 @@ public class QuestionDetailActivity extends AppCompatActivity  implements View.O
             Map<String, String> data = new HashMap<String, String>();
             data.put("ジャンル",String.valueOf(mQuestion.getGenre()));
             mFavoriteRef.setValue(data, this);
+            mFavoriteButton.setText("お気に入りから削除");
+            favoriteFL = 1;
         }else{
             mFavoriteRef.removeValue();
+            mFavoriteButton.setText("お気に入りに登録");
+            favoriteFL = 0;
+        }
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent){
+        if (favoriteFL == 1) {
+            mFavoriteButton.setText("お気に入りから削除");
+        }else {
+            mFavoriteButton.setText("お気に入りに登録");
         }
 
     }
@@ -218,8 +221,7 @@ public class QuestionDetailActivity extends AppCompatActivity  implements View.O
     public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
         if (databaseError == null) {
             Snackbar.make(findViewById(android.R.id.content),"お気に入りに追加しました", Snackbar.LENGTH_LONG).show();
-            finish();
-
+            //finish();
         }else {
             Snackbar.make(findViewById(android.R.id.content),"お気に入り追加に失敗しました", Snackbar.LENGTH_LONG).show();
         }
