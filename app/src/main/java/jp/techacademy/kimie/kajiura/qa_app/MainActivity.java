@@ -44,10 +44,13 @@ public class MainActivity extends AppCompatActivity
     private ArrayList<Question> mQuestionArrayList;
     private QuestionsListAdapter mAdapter;
 
+    private Question mQuestion;
+
     private ChildEventListener mEventListener = new ChildEventListener(){
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot , String s) {
             HashMap map = (HashMap) dataSnapshot.getValue();
+
             String title = (String) map.get("title");
             String body = (String) map.get("body");
             String name = (String) map.get("name");
@@ -130,7 +133,6 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //ここから
 
                 //ジャンル選択をしていない場合はエラー表示
                 if (mGenre == 0) {
@@ -164,7 +166,6 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        //ここから
         //Firebase
         mDatabaseReference = FirebaseDatabase.getInstance().getReference();
 
@@ -173,7 +174,6 @@ public class MainActivity extends AppCompatActivity
         mAdapter = new QuestionsListAdapter(this);
         mQuestionArrayList = new ArrayList<Question>();
         mAdapter.notifyDataSetChanged();
-        //ここまで追加
 
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -257,9 +257,8 @@ public class MainActivity extends AppCompatActivity
             mToolbar.setTitle("お気に入り");
             mGenre = 5;
             Intent intent = new Intent(getApplicationContext(),FavoriteListAdapter.class);
-            intent.putExtra("ジャンル",mGenre);
-            intent.putExtra("question", mQuestionArrayList);
             startActivity(intent);
+            return true;
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

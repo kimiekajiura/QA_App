@@ -29,6 +29,7 @@ public class Question implements Serializable{
 
     //Firebaseから取得した質問のモデルクラスであるAnswerのArrayList
     private ArrayList<Answer> mAnswerArrayList;
+
     private ArrayList<Question> mQuestionArrayList;
 
     public String getTitle() {
